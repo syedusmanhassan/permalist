@@ -1,5 +1,15 @@
 import express from "express";
 import bodyParser from "body-parser";
+import pg from "pg";
+
+const db = new pg.Client({
+  user : "postgres",
+  host : "localhost",
+  database: "permalist",
+  password: "usmanwasti",
+  port : 5432
+});
+db.connect();
 
 const app = express();
 const port = 3000;
@@ -7,15 +17,26 @@ const port = 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+
+
 let items = [
   { id: 1, title: "Buy milk" },
   { id: 2, title: "Finish homework" },
 ];
 
-app.get("/", (req, res) => {
+async function createdList() {
+  const result = await db.query("SELECT * FROM list");
+  items = result.rows;
+  console.log(result.rows);
+  return result.rows;
+  
+}
+
+app.get("/", async(req, res) => {
+  const list = await createdList();
   res.render("index.ejs", {
     listTitle: "Today",
-    listItems: items,
+    listItems: items ,
   });
 });
 
